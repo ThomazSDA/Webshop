@@ -1,44 +1,39 @@
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UserSummaryDTO } from "../types/models";
 import { API_URL } from "../App";
-import { useState } from "react";
+import { useAuthStore } from "./stores/authStore";
 
 const UserList = () => {
 
-    const [userId, setUserId] = useState(NaN)
-
+    const { user: currentUser } = useAuthStore();
     const queryClient = useQueryClient();
 
     const deleteUserMutation = useMutation({
-        mutationFn: async () => {
-            const response = await fetch(`${API_URL}/users/${userId}`, {
+        mutationFn: async (id: number) => {
+            const response = await fetch(`${API_URL}/users/${id}`, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
             });
-
             if (!response.ok) {
                 throw new Error('Failed to delete user')
             };
-
-            return response.json();
+            return;
         },
-
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] })
-                console.log('user deleted successfully')
-                setUserId(NaN);
+            console.log('User deleted successfully');
+            queryClient.refetchQueries({ queryKey: ["users"] })
+        },
+        onError: async (error) => {
+            alert(error.message || "Cannot delete this User");
         }
     })
 
-
-    const {
-        data: users,
-        isLoading,
-        error,
-    } = useQuery<UserSummaryDTO[]>({
+    const { data: users, isLoading, error } = useQuery<UserSummaryDTO[]>({
         queryKey: ["users"],
         queryFn: async () => {
-            const response = await fetch(`${API_URL}/users`);
+            const response = await fetch(`${API_URL}/users`, {
+                credentials: 'include',
+            });
             if (!response.ok) {
                 throw new Error("Failed to fetch users");
             }
@@ -46,37 +41,48 @@ const UserList = () => {
         },
     });
 
-    if (isLoading) {
-        return <div>Loading users...</div>;
+    if (isLoading) { return <div>Loading users...</div>; }
+
+    if (error) { return <div style={{ color: "red" }}>Error: {error.message}</div>; }
+
+    const deleteUser = (id: number) => {
+        if (!confirm("Are you sure you want to delete this User?")) {
+            return;
+        }
+        deleteUserMutation.mutate(id);
     }
 
-    if (error) {
-        return <div style={{ color: "red" }}>Error: {error.message}</div>;
+    const editUser = (_id: number) => {
+        // Do stuff
     }
 
-    const deleteUser = (userid) => {
-        setUserId(userid)
-        deleteUserMutation.mutate()
-
-
-    }
-
-    return (<>
+    return (
         <div>
             <h2>Users</h2>
             {users && users.length > 0 ? (
-                <ul>
+                <div className="profile-table">
                     {users.map((user: UserSummaryDTO) => (
-                        <li key={user.id}>
-                             {user.firstName} {user.lastName} <button onClick={()=>deleteUser(user.id)}> delete user </button>
-                        </li>
+                        <div className="row" key={user.id}>
+                            <div className="cell label">{user.firstName} {user.lastName}</div>
+                            <div className="cell actions">
+                                <button onClick={() => editUser(user.id) }>Edit User</button>
+                                <button
+                                    onClick={()=> deleteUser(user.id) }
+                                    // disabled={deleteUserMutation.isPending}
+                                    disabled={user.id === currentUser?.id || deleteUserMutation.isPending}
+                                    title={user.id === currentUser?.id ? "You cannot delete yourself" : ""}
+                                >
+                                    {deleteUserMutation.isPending ? "Deleting..." : "Delete User" }
+                                </button>
+                                {user.id === currentUser?.id && (<span style={{ fontSize: "0.85rem", fontStyle: "italic" }}> (this is you)</span>)}
+                            </div>
+                        </div>
                     ))}
-                </ul>
+                </div>
             ) : (
-                <p>No users found</p>
+                <p>No Users found</p>
             )}
         </div>
-    </>
     );
 };
 

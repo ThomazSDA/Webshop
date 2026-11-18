@@ -11,7 +11,7 @@ export interface CartItemDTO {
 
 export interface CartProductDTO {
     productBaseId: number;
-    productVariantId: number;
+    productId: number;
     name: string;
     imageURL: string;
     description: string;
@@ -63,6 +63,7 @@ export interface ProductBaseDTO {
     name: string,
     description: string,
     productBrand: string,
+    totalStock: number,
     productVariants: ProductDTO[],
     attributes: ProductAttributeDTO[],
 }
@@ -161,7 +162,6 @@ export interface User {
     houseNumber: string;
     streetName: string;
     city: string;
-    // shoppingCarts: ShoppingCart[];
 }
 
 export interface CartItem {
@@ -190,6 +190,13 @@ export interface ProductAttribute {
     product: Product;
 }
 
+export interface ProductFilterSidebarDTO {
+    categories: string[];
+    brands: string[];
+    minPrice: number;
+    maxPrice: number;
+}
+
 export interface ShoppingCart {
     id: number;
     user: User;
@@ -213,8 +220,40 @@ export type ProductFilters = {
     // colors: string[],
     sizes: string[],
     onSale: boolean;
+    minPrice?: number;
+    maxPrice?: number;
 }
 
 export interface CartItemAmountUpdateDTO {
     quantity: number,
+}
+
+export interface ShippingMethodDTO {
+    code: string;
+    name: string;
+    price: number;
+}
+
+export type ShippingMethod = "POSTNL" | "DHL" | "UPS";
+
+export interface PlaceOrderRequest {
+    shippingMethod: string;
+}
+
+export interface OrderDTO {
+    id: number;
+    subTotalPrice: number;
+    shippingCost: number;
+    shippingMethod: string;
+    totalPrice: number;
+    createdAt: string;
+    orderItems: OrderItem[];
+}
+
+export interface OrderItem {
+    id: number;
+    productName: string;
+    ImageURL: string;
+    priceAtPurchase: number;
+    amount: number;
 }

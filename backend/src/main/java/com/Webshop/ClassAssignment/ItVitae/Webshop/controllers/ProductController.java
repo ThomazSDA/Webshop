@@ -5,6 +5,7 @@ import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.Product.StockDTO
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductBase.ProductBaseCreateDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductBase.ProductBaseCreateDTOtwo;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductBase.ProductBaseDTO;
+import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductFilterSidebarDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.models.Product.ProductBase;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,5 +54,10 @@ public class ProductController {
     public ResponseEntity<ProductDTO> updateStock(@RequestBody StockDTO stockDTO) {
         ProductDTO stockUpdate = productService.updateStock(stockDTO);
         return ResponseEntity.ok(stockUpdate);
+    }
+
+    @GetMapping("/filters")
+    public ProductFilterSidebarDTO getFilterData() {
+        return productService.getFilterData();
     }
 }

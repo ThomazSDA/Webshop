@@ -58,8 +58,6 @@ const LoginForm = () => {
   }
 
   return (
-    // <div className="login-box">
-    //   <h2>Login</h2>
     <div>
     <form className="form" onSubmit={handleFormSubmit}>
       {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
@@ -88,7 +86,8 @@ const LoginForm = () => {
             setErrorMessage(null),
             setPasword( e.target.value )}}
         />
-        <span className="forgot-password">Forgot password?</span>
+      {/* [Not implemented]
+        <span className="forgot-password">Forgot password?</span> */}
       </div>
       <div className="form-actions">
       <button type="submit">Login</button>

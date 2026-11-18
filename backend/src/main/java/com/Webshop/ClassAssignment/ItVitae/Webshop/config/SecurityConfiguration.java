@@ -45,10 +45,12 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET,"/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/cartitems/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/shoppingcarts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/shoppingcarts/shipping-methods").permitAll()
 
                         .requestMatchers("/users/me").hasRole("USER")
                         .requestMatchers("/users/me/shoppingcart").hasRole("USER")
                         .requestMatchers("/checkout").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST,"/orders").hasRole("USER")
 //                        .requestMatchers("/users/me").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")

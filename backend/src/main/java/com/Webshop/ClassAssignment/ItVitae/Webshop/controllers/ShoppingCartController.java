@@ -1,9 +1,11 @@
 package com.Webshop.ClassAssignment.ItVitae.Webshop.controllers;
 
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.cardItem.CartItemCreateDTO;
+import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.shoppingCart.ShippingMethodDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.shoppingCart.ShoppingCartCreateDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.shoppingCart.ShoppingCartDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.shoppingCart.ShoppingCartUpdateDTO;
+import com.Webshop.ClassAssignment.ItVitae.Webshop.enums.ShippingMethod;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.models.ShoppingCart;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.models.User;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.repositories.UserRepository;
@@ -16,6 +18,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -80,5 +83,15 @@ public class ShoppingCartController {
             @AuthenticationPrincipal UserDetails userDetails) {
         ShoppingCart mergedCart = shoppingCartService.mergeGuestIntoUserCart(guestCartId, userDetails);
         return ResponseEntity.ok(ShoppingCartDTO.fromEntity(mergedCart));
+    }
+
+    @GetMapping("/shipping-methods")
+    public List<ShippingMethodDTO> getShippingMethods() {
+        List<ShippingMethodDTO> output = new ArrayList<>();
+
+        for (ShippingMethod method : ShippingMethod.values()) {
+            output.add(method.toDTO());
+        }
+        return output;
     }
 }

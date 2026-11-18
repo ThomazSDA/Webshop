@@ -48,7 +48,6 @@ public class UserService {
 
         User user = userCreateDTO.toEntity();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-//        user.setShoppingCarts(user.getShoppingCarts());
         User savedUser = userRepository.save(user);
         return UserDTO.fromEntity(savedUser);
     }
@@ -67,6 +66,15 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User with " + id + " not found"));
         user.clearShoppinCarts();
 
+        if (user.getRoles().contains("ADMIN")) {
+            long adminCount = userRepository.findAll().stream()
+                    .filter(usr -> usr.getRoles().contains("ADMIN"))
+                    .count();
+
+            if (adminCount <= 1) {
+                throw new IllegalStateException("Cannot delete the last admin");
+            }
+        }
         userRepository.delete(user);
     }
 }

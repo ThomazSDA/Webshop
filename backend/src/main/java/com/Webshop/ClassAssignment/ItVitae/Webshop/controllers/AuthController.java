@@ -66,6 +66,5 @@ public class AuthController {
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
         return ResponseEntity.ok(UserDTO.fromEntity(user));
-//        return ResponseEntity.ok(authService.loginUser(loginDTO));
     }
 }

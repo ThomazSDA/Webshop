@@ -43,7 +43,8 @@ const UserPage = () => {
                 {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify(formData),
+                    credentials: 'include',
                 });
             if (!response.ok) {
                 const errorBody = await response.json();
@@ -57,7 +58,8 @@ const UserPage = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["user"] })
-        }, onError: (error) => {
+        },
+        onError: (error) => {
             setErrorMessage(error.message);
         }
     })
@@ -96,14 +98,14 @@ const UserPage = () => {
             <>
                 {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
                 <div className="container" >
-                    <div>username: {data.firstName} {data.lastName}</div>
-                    <div>address: {data.streetName} {data.houseNumber} {data.city} {data.zipCode} </div>
-                    <div>email: {data.email}</div>
-                    <button onClick={openModal}>edit profile</button>
+                    <div>Username: {data.firstName} {data.lastName}</div>
+                    <div>Address: {data.streetName} {data.houseNumber} {data.city} {data.zipCode} </div>
+                    <div>Email: {data.email}</div>
+                    <button onClick={openModal}>Edit Profile</button>
                 </div>
-                <div className="bold">my orders</div>
+                <div className="bold">My Orders</div>
                 {/* (0,-1) in slice om de laatste cart te skippen */}
-                {data.shoppingCarts.slice(0, -1).map(cart => (
+                {data.shoppingCarts.slice(0,-1).map(cart => (
                     <div key={cart.id} className="card">
                         {cart.cartItems.map(item => (
                             <div key={item.id} >
@@ -128,10 +130,10 @@ const UserPage = () => {
                         <div className="modal-content">
                             <form onSubmit={handleFormSubmit}>
                                 <fieldset>
-                                    <legend>edit profile</legend>
+                                    <legend>Edit Profile</legend>
                                     <fieldset>
-                                        <legend>name</legend>
-                                        <label htmlFor="firstName">First name: </label>
+                                        <legend>Name</legend>
+                                        <label htmlFor="firstName">First Name: </label>
                                         <input
                                             type="text"
                                             placeholder="Your first name"
@@ -140,7 +142,7 @@ const UserPage = () => {
                                             value={formData.firstName}
                                             onChange={handleChange}
                                         /><br />
-                                        <label htmlFor="lastName">Last name: </label>
+                                        <label htmlFor="lastName">Last Name: </label>
                                         <input
                                             type="text"
                                             placeholder="Your last name"
@@ -150,8 +152,8 @@ const UserPage = () => {
                                             onChange={handleChange} /><br />
                                     </fieldset>
                                     <fieldset>
-                                        <legend>place</legend>
-                                        <label htmlFor="streetName">Street name: </label>
+                                        <legend>Address</legend>
+                                        <label htmlFor="streetName">Street Name: </label>
                                         <input
                                             type="text"
                                             placeholder="Your streetName"
@@ -159,7 +161,7 @@ const UserPage = () => {
                                             name="streetName"
                                             value={formData.streetName}
                                             onChange={handleChange} /><br />
-                                        <label htmlFor="houseNumber">House number: </label>
+                                        <label htmlFor="houseNumber">House Number: </label>
                                         <input
                                             type="text"
                                             placeholder="Your houseNumber"
@@ -175,7 +177,7 @@ const UserPage = () => {
                                             name="city"
                                             value={formData.city}
                                             onChange={handleChange} /><br />
-                                        <label htmlFor="zipcode">Zipcode: </label>
+                                        <label htmlFor="zipcode">Zip Code: </label>
                                         <input
                                             type="text"
                                             placeholder="Your zipcode"
@@ -185,18 +187,19 @@ const UserPage = () => {
                                             onChange={handleChange} /><br />
                                     </fieldset>
                                     <fieldset>
-                                        <legend>contact information</legend>
-                                        <label htmlFor="email">email: </label>
+                                        <legend>Contact Information</legend>
+                                        <label htmlFor="email">Email: </label>
                                         <input
                                             type="text"
                                             placeholder="Your email"
                                             id="email"
                                             name="email"
+                                            size={30}
                                             value={formData.email}
                                             onChange={handleChange} /><br />
                                     </fieldset>
-                                    <button type="submit">submit</button>
-                                    <button onClick={modalToggle}> close modal</button>
+                                    <button type="submit">Save changes</button>
+                                    <button onClick={modalToggle}>Cancel Editing</button>
                                 </fieldset>
                             </form>
                         </div>

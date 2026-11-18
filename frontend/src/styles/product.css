@@ -108,3 +108,17 @@
     color: red;
     font-weight: bold;
 }
+
+.container {
+    position: relative;
+}
+
+.out-of-stock {
+    transform: rotate(-50deg);
+    position: absolute;
+    left: 75px;
+    bottom: 150px;
+    font-size: x-large;
+    color: red;
+    font-weight: bold;
+}

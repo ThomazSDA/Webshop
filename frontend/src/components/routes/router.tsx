@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import LandingPage from "../../pages/landingPage";
-import CheckoutPage from "../../pages/checkoutPage";
+import CheckoutPage from "../../pages/checkout/checkoutPage";
 import ShoppingCartPage from "../../pages/shoppingCartPage";
 import UserPage from "../../pages/userPage";
 import AdminPage from "../../pages/adminPage";
@@ -11,8 +11,9 @@ import { AuthRoute } from "./authRoute";
 import UserDetailPage from "../../pages/UserDetail";
 import SignUpForm from "../forms/SignUpForm";
 import ProductDetailPage from "../../pages/productDetailPage";
-import YPage from "../../pages/YPage";
+import YPage from "../../unused/YPage";
 import MainLayOut from "./MainLayOut";
+import ThankYouPage from "../../pages/thankYouPage";
 
 const Router = () => {
 
@@ -32,8 +33,8 @@ const Router = () => {
                     <Route element={<AuthRoute />}>
                         <Route path="/users/me" element={<UserPage />} />
                         <Route path="/checkout" element={<CheckoutPage />} />
+                        <Route path="/thankyou/:orderId" element={<ThankYouPage />} />
                     </Route>
-
                 <Route path="/y" element={<YPage />} />
                 <Route path="/products" element={<ProductOverviewPage />} />
                 <Route path="/products/:productId" element={<ProductDetailPage />} />

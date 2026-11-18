@@ -51,7 +51,7 @@ public class AuthService {
         }
 
         User user = registerDTO.toEntity();
-        user.setRoles(List.of("ROLE_USER"));
+        user.setRoles(List.of("USER"));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
 //        shoppingCartService.createShoppingCart(new ShoppingCartCreateDTO(user.getId()));

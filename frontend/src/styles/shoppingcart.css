@@ -22,3 +22,54 @@ th, td {
     border: blue;
     color: white;
 }
+
+.summary-price {
+    text-align: right;
+}
+
+.summary-price:before {
+    content: "€";
+    float: left;
+    padding-right: 4px;
+}
+
+.price-table {
+    display: table;
+    border-collapse: collapse;
+}
+
+.row {
+    display: table-row;
+}
+
+.cell {
+    display: table-cell;
+    padding: 4px 8px 4px 0;
+    vertical-align: baseline;
+}
+
+.label {
+    padding-right: 24px;
+    color: #444;
+}
+
+.currency {
+    width: 12px;
+}
+
+.amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.note {
+    margin-left: 6px;
+    font-size: 0.85rem;
+    color: #777;
+    white-space: nowrap;
+}
+
+.total .label,
+.total .amount {
+    font-weight: 600;
+}

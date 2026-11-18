@@ -5,9 +5,10 @@ import '../styles/card.css';
 import { useNavigate, useOutletContext } from "react-router";
  
  
-const productOverviewPage = () => {
+const ProductOverviewPage = () => {
     const navigate = useNavigate();
     const { filters } = useOutletContext<{ filters: ProductFilters }>();
+    if (!filters) return null;
  
     const { data: products, isLoading, error } = useQuery<ProductBaseDTO[]>({
         queryKey: ['products'],
@@ -35,19 +36,20 @@ const productOverviewPage = () => {
             if (!hasSaleVariant) return false;
         }
 
+        if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+            const matchesPrice = product.productVariants.some(v => {
+                const price = v.price * v.salePercentage;
+
+                if (filters.minPrice !== undefined && price < filters.minPrice) return false;
+                if (filters.maxPrice !== undefined && price > filters.maxPrice) return false;
+
+                return true;
+            });
+            if (!matchesPrice) return false;
+        }
+
         return true;
     });
-
-    // const getColorVariants = (product: ProductBaseDTO) => {
-    //     const map = new Map<string, ProductDTO>();
- 
-    //     product.productVariants.forEach(variant => {
-    //         if (!map.has(variant.color)) {
-    //         map.set(variant.color, variant);
-    //         }
-    //     });
-    //     return Array.from(map.values());
-    // }
  
     if (isLoading) { return <p>Loading products...</p> }
  
@@ -58,10 +60,13 @@ const productOverviewPage = () => {
             <>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
                     {filteredProducts.map(product => (
-                        <div key={product.id} onClick={() => navigate(`/products/${product.id}`)} className="card">
-                            <h3 style={{}}>{product.name} from {product.productBrand}</h3>
+                        <div key={product.id} onClick={() => navigate(`/products/${product.id}`)} className={`card ${product.totalStock === 0 ? "card-disabled" : ""}`}>
+                            <h3>{product.name} from {product.productBrand}</h3>
                             <p>{product.description}</p>
+                            <div className="container">
                             <img src={product.defaultImageURL} alt={product.name} style={{ height: 250 }}/>
+                            {product.totalStock ===0 && <span className="out-of-stock">Out of Stock</span>}
+                            </div>
                             {product.productVariants.some(variant => variant.salePercentage < 1 ) && <span className="sale-overview">SALE</span>}
                         </div>
                     ))
@@ -70,43 +75,6 @@ const productOverviewPage = () => {
             </>
         );
     }
-
-    // if (products !== undefined) {
-    //     return (
-    //         <>
-    //             <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
-    //                 {products.map(product => (
-    //                     <div key={product.id}  onClick={() => setProductId(product.id)} className="card">
-    //                         <h3 style={{}}>{product.name} from {product.productBrand}</h3>
-    //                         <p>{product.description}</p>
-    //                         <p>place img here</p>
-    //                         <h4>attributes</h4>
-    //                         {product.attributes.map(attribute => (
-    //                             <div key={attribute.id}>
-    //                             <p>{attribute.attribute}: {attribute.value}</p>
-    //                             </div>
-    //                         ))}
-    //                     </div>
-    //                 ))
-    //                 }
-    //             </div>
-    //         </>
-    //     );
-    // }
- 
-    // return (
-    //     <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
-    //         {products?.flatMap(product => (
-    //             product.productVariants.map(variant => (
-    //                 <div key={variant.id} className="card">
-    //                     <h3>{product.name}</h3>
-    //                     <p>{variant.color}</p>
-    //                     <p>{variant.price}</p>
-    //                 </div>
-    //             ))
-    //         ))}
-    //     </div>
-    // );
 }
  
-export default productOverviewPage;
+export default ProductOverviewPage;

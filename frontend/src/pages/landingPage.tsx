@@ -1,12 +1,17 @@
-import HeroComponant from "../components/HeroComponant";
+import { useState } from "react";
+// import HeroComponent from "../components/HeroComponent";
+import ImageCarousel from "../components/imageCarousel";
 
 const LandingPage = () => {
     
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
     return (
         <>
             <>
-                <img src="images/other/pro-shirt.png" width="250" height="250" className="centerImage" /><br />
-                <HeroComponant />
+                {/* <img src="/images/other/pro-shirt.png" width="250" height="250" className="centerImage" /><br /> */}
+                {/* <HeroComponent /> */}
+                <ImageCarousel currentImageIndex={currentImageIndex} setCurrentImageIndex={setCurrentImageIndex}/>
                 <>
                     <div className="container" >
                         <div>Company name: </div>
@@ -20,7 +25,7 @@ const LandingPage = () => {
                         <div>Email:</div>
                         <div>webshop@notAscam.gh</div>
                     </div>
-                    <img src="images/other/logo.png" width={"100"} height={"100"}/>
+                    <img src="/images/other/logo.png" width={"100"} height={"100"}/>
                 </>
             </>
         </>

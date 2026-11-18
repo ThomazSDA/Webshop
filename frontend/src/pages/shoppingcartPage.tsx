@@ -36,11 +36,7 @@ const ShoppingCartPage = () => {
     });
 
     const removeItemMutation = useMutation({
-        mutationFn: async ({
-            cartItemId,
-        }: {
-            cartItemId: number,
-        }) => {
+        mutationFn: async ({ cartItemId }: { cartItemId: number }) => {
             const response = await fetch(`${API_URL}/cartitems/${cartItemId}`, {
                 method: 'DELETE',
                 credentials: 'include',
@@ -64,7 +60,7 @@ const ShoppingCartPage = () => {
         <div style={{ padding: "2rem" }}>
             <h2>Shopping Cart</h2>
 
-            <p><b>Cart ID:</b> {cart.id}</p>
+            {/* <p><b>Cart ID:</b> {cart.id}</p> */}
 
             {cart.user ? (
                 <p><b>User:</b> {cart.user.firstName} (id: {cart.user.id})</p>
@@ -81,8 +77,8 @@ const ShoppingCartPage = () => {
                 <table>
                     <thead>
                         <tr>
+                            <th></th>
                             <th>Product</th>
-                            <th>Variant</th>
                             <th>Amount</th>
                             <th>Price/pc</th>
                             <th>Subtotal</th>
@@ -155,7 +151,7 @@ const ShoppingCartPage = () => {
                             }
                         }}
                             className="checkout" >
-                            Checkout
+                            {!user ? "Login" : "Checkout" }
                         </button>
                         {!user && <p>Please log in to proceed to checkout.</p>}
                     </div>

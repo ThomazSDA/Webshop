@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Button, Card, Col, Container, Form, Row } from "react-bootstrap"
-import type { productCreateDTO } from "../../types/form.types"
 import CustomModal from "./CustomModal"
 import { API_URL } from "../../App"
 
@@ -20,26 +19,31 @@ interface variantAttribute {
     type: string
 }
 
+interface ProductFormData {
+    defaultImageURL: string;
+    name: string;
+    productBrand: string;
+    description: string;
+    category: string;
+    productAttributes: {
+        attribute: string;
+        value: string;
+        type: string;
+    }[];
+    products: variant[];
+}
+
 const NewProductModal = () => {
 
-        // String productCode,
-        // String defaultImageURL,
-        // String category,
-        // String name,
-        // String description,
-        // String productBrand,
-        // List<ProductCreateDTO> products,
-        // List<ProductAttributeCreateDTO> productAttributes
-
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<ProductFormData>({
         defaultImageURL: '',
         name: '',
         productBrand: '',
         description: '',
         category: '',
-        productAttributes: {},
-        products: {}
-    })
+        productAttributes: [],
+        products: []
+    });
 
     const [show, setShow] = useState(false)
 
@@ -58,20 +62,17 @@ const NewProductModal = () => {
     const [numberOfProducts, setNumberOfProducts] = useState(1)
     const [numberOfproductAttributes, setNumberOfproductAttributes] = useState([1])
 
-    // const [AttributeOnedisabled, setAttributeOneDisabled] = useState(false)
-    // const [AttributeTwoDisabled, setAttributeTwoDisabled] = useState(false)
-
     const [variantAttributeOne, setVariantAttributeOne] = useState([0]);
     const [variantAttributeTwo, setVariantAttributeTwo] = useState([0]);
 
     const queryClient = useQueryClient();
 
     const createProduct = useMutation({
-        mutationFn: async (FormData: productCreateDTO) => {
+        mutationFn: async (formData: ProductFormData) => {
             const response = await fetch(`${API_URL}/products/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(FormData)
+                body: JSON.stringify(formData)
             });
 
             if (!response.ok) {
@@ -82,7 +83,6 @@ const NewProductModal = () => {
         },
 
         onSuccess: (data) => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             queryClient.invalidateQueries({ queryKey: ['products'] }),
                 console.log('products created successfully', data),
                 setFormData({
@@ -91,19 +91,15 @@ const NewProductModal = () => {
                     productBrand: '',
                     description: '',
                     category: '',
-                    productAttributes: {},
-                    products: {}
+                    productAttributes: [],
+                    products: []
                 });
         }
     })
 
-    const addVariantAttributeOne = () => {
-        setVariantAttributeOne([...variantAttributeOne, variantAttributeOne.length])
-    }
+    const addVariantAttributeOne = () => { setVariantAttributeOne([...variantAttributeOne, variantAttributeOne.length]) }
 
-    const addVariantAttributeTwo = () => {
-        setVariantAttributeTwo([...variantAttributeTwo, variantAttributeTwo.length])
-    }
+    const addVariantAttributeTwo = () => { setVariantAttributeTwo([...variantAttributeTwo, variantAttributeTwo.length]) }
 
     const removeVariantAttributeOne = () => {
         const length = variantAttributeOne.length
@@ -117,9 +113,7 @@ const NewProductModal = () => {
         setVariantAttributeTwo(updatedList);
     }
 
-    const addUniqueAttribute = () => {
-        setNumberOfproductAttributes([...numberOfproductAttributes, numberOfproductAttributes.length + 1])
-    }
+    const addUniqueAttribute = () => { setNumberOfproductAttributes([...numberOfproductAttributes, numberOfproductAttributes.length + 1]) }
 
     const removeUniqueAttribute = () => {
         const length = numberOfproductAttributes.length
@@ -127,31 +121,44 @@ const NewProductModal = () => {
         setNumberOfproductAttributes(updatedLength)
     }
 
-    // console.log("number of unique attributes", numberOfproductAttributes)
+    const addAttributeOne = (eventAttributeOne: React.FormEvent<HTMLFormElement>) => {
+        eventAttributeOne.preventDefault();
 
-    const addAttributeOne = (eventAttributeOne) => {
-        eventAttributeOne.preventDefault()
-        // setAttributeOneDisabled(true)
-        const attributeOneData = new FormData(eventAttributeOne.target);
+        const attributeOneData = new FormData(eventAttributeOne.currentTarget);
         const data = Object.fromEntries(attributeOneData.entries());
-        const attributeOne = data.attribute as string
+        const attributeOne = data.attribute as string;
+
         delete data.attribute;
-        const valuesAttributeOne = Object.values(data)
 
-        setVariantOneData({ attributeOne: attributeOne, valuesOne: valuesAttributeOne, type: "VARIANT" })
-    }
+        const valuesAttributeOne = Object.values(data).filter(
+            (value): value is string => typeof value === "string"
+        );
+
+        setVariantOneData({
+            attributeOne: attributeOne,
+            valuesOne: valuesAttributeOne
+        });
+    };
 
 
-    const addAttributeTwo = (eventAttributeTwo) => {
-        eventAttributeTwo.preventDefault()
-        const attributeTwoDataRaw = new FormData(eventAttributeTwo.target);
+    const addAttributeTwo = (eventAttributeTwo: React.FormEvent<HTMLFormElement>) => {
+        eventAttributeTwo.preventDefault();
+
+        const attributeTwoDataRaw = new FormData(eventAttributeTwo.currentTarget);
         const attributeTwodata = Object.fromEntries(attributeTwoDataRaw.entries());
-        const attributeTwo = attributeTwodata.attribute as string
-        delete attributeTwodata.attribute;
-        const valuesAttributeTwo = Object.values(attributeTwodata)
+        const attributeTwo = attributeTwodata.attribute as string;
 
-        setVariantTwoData({ attributeTwo: attributeTwo, valuesTwo: valuesAttributeTwo, type: "VARIANT" })
-    }
+        delete attributeTwodata.attribute;
+
+        const valuesAttributeTwo = Object.values(attributeTwodata).filter(
+            (value): value is string => typeof value === "string"
+        );
+
+        setVariantTwoData({
+            attributeTwo: attributeTwo,
+            valuesTwo: valuesAttributeTwo
+        });
+    };
 
     const changeNumberOfProducts = (eventNumberOfProducts: { target: { value: string } }) => {
         setNumberOfProducts(parseInt(eventNumberOfProducts.target.value))
@@ -182,62 +189,67 @@ const NewProductModal = () => {
         setProducts(updatedProducts);
         setFormData({...formData, products:updatedProducts})
     }
-    // console.log(products)
 
     const handleChangeBaseProduct = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
         setFormData({ ...formData, [name]: value })
     }
 
-    const lockInproductAttributes = (lockInEvent) => {
-        lockInEvent.preventDefault()
-        
-        const productAttributesData = new FormData(lockInEvent.target)
-        const data = Object.fromEntries(productAttributesData.entries())
-        const values = Object.values(data)
+    const lockInproductAttributes = (lockInEvent: React.FormEvent<HTMLFormElement>) => {
+        lockInEvent.preventDefault();
 
-        const productAttributesArray = []
-        for (let i = 0; i < ((Object.values(data).length/2)); i++) {
-            productAttributesArray.push({attribute: values[i*2], value: values[i*2+1], type: "PRODUCT"})
+        const productAttributesData = new FormData(lockInEvent.currentTarget);
+        const data = Object.fromEntries(productAttributesData.entries());
+        const values = Object.values(data);
+
+        const productAttributesArray: ProductFormData["productAttributes"] = [];
+
+        for (let i = 0; i < values.length / 2; i++) {
+            const attribute = values[i * 2];
+            const value = values[i * 2 + 1];
+
+            if (typeof attribute === "string" && typeof value === "string") {
+                productAttributesArray.push({
+                    attribute,
+                    value,
+                    type: "PRODUCT"
+                });
+            }
         }
-        console.log(productAttributesArray)
 
-        setFormData({ ...formData, productAttributes: productAttributesArray })
-    }
+        console.log(productAttributesArray);
+
+        setFormData({ ...formData, productAttributes: productAttributesArray });
+    };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         createProduct.mutate(formData);
     }
 
-    // const showFormdata = ()=>{
-    //     console.log(formData)
-    //     console.log(JSON.stringify(formData))
-    // }
-
     return (
         <div>
-            <Button as="input" variant="primary" defaultValue="create new product" onClick={() => setShow(true)}/>
-            <CustomModal show={show} handleSubmit={() => handleSubmit} setShow={() => setShow(false)} title="new product">
+            <Button as="input" variant="primary" defaultValue="Create new Product" style={{ padding: "5px", borderRadius: "5px", cursor: "pointer", width: 120, background: "#f9f9f9" }} onClick={() => setShow(true)}/>
+            <CustomModal show={show} handleSubmit={() => handleSubmit} setShow={() => setShow(false)} title="New Product">
                 <Form>
                     {/* style={{all: "unset"}} */}
                     <Card > {/* all:unset stelt dat alle voorgaande CSS op default values word gereset */}
                         <Form.Group className="mb-3">
                             <Form.Label>product name</Form.Label>
-                            <Form.Control placeholder="basic t-shirt" value={formData.name} type="text" id="name" name="name" onChange={() => handleChangeBaseProduct(event)} />
+                            <Form.Control placeholder="basic t-shirt" value={formData.name} type="text" id="name" name="name" onChange={handleChangeBaseProduct} />
 
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>product brand</Form.Label>
-                            <Form.Control placeholder="nike" value={formData.productBrand} id="productBrand" name="productBrand" onChange={() => handleChangeBaseProduct(event)} />
+                            <Form.Control placeholder="nike" value={formData.productBrand} id="productBrand" name="productBrand" onChange={handleChangeBaseProduct} />
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>product description</Form.Label>
-                            <Form.Control as={"textarea"} rows={3} value={formData.description} name="description" placeholder="basic t-shirt" onChange={() => handleChangeBaseProduct(event)} />
+                            <Form.Control as={"textarea"} rows={3} value={formData.description} name="description" placeholder="basic t-shirt" onChange={handleChangeBaseProduct} />
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>category</Form.Label>
-                            <Form.Control placeholder="type of product" type="text" value={formData.category} name="category" onChange={() => handleChangeBaseProduct(event)}>
+                            <Form.Control placeholder="type of product" type="text" value={formData.category} name="category" onChange={handleChangeBaseProduct}>
                                 {/* <option hidden value="">select a type</option>
                                 <option>top</option>
                                 <option>bottom</option>
@@ -247,7 +259,7 @@ const NewProductModal = () => {
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>base product image URL</Form.Label>
-                            <Form.Control placeholder="URL" value={formData.defaultImageURL} name="defaultImageURL" onChange={() => handleChangeBaseProduct(event)} />
+                            <Form.Control placeholder="URL" value={formData.defaultImageURL} name="defaultImageURL" onChange={handleChangeBaseProduct} />
                         </Form.Group>
                     </Card>
                 </Form>
@@ -348,11 +360,11 @@ const NewProductModal = () => {
                     <div key={variant.key}>
                         {variant.variantAttributeOne.attribute}: {variant.variantAttributeOne.value} {variant.variantAttributeTwo.attribute}: {variant.variantAttributeTwo.value}
                         <label htmlFor=" price"></label>
-                        <input placeholder="price" type="number" name="price" onChange={() => handleChange(variant.key, event)} />
+                        <input placeholder="price" type="number" name="price" onChange={(event) => handleChange(variant.key, event)} />
                         <label htmlFor="stock"></label>
-                        <input placeholder="stock" type="number" name="stock" onChange={() => handleChange(variant.key, event)} />
+                        <input placeholder="stock" type="number" name="stock" onChange={(event) => handleChange(variant.key, event)} />
                         <label htmlFor="imageURL"></label>
-                        <input placeholder="image url" type="text" name="imageURL" onChange={() => handleChange(variant.key, event)} />
+                        <input placeholder="image url" type="text" name="imageURL" onChange={(event) => handleChange(variant.key, event)} />
                         {/* <Button onClick={updateVariant(variant.key, variant.price, variant.stock, variant.imageURL)}> add</Button> */}
                     </div>
                 ))}

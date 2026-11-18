@@ -8,7 +8,6 @@ import com.Webshop.ClassAssignment.ItVitae.Webshop.models.Product.Product;
 
 public record CartItemDTO(
     Long id,
-//    ProductSummaryDTO product,
     CartProductDTO product,
     int amount
 ) {
@@ -16,7 +15,6 @@ public record CartItemDTO(
 
         return new CartItemDTO(
                 cartItem.getId(),
-//                ProductSummaryDTO.fromEntity(cartItem.getProduct()),
                 CartProductDTO.fromEntity(cartItem.getProduct()),
                 cartItem.getAmount()
         );

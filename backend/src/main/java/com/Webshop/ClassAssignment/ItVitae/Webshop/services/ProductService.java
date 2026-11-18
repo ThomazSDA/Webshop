@@ -8,6 +8,7 @@ import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductAttribute
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductBase.ProductBaseCreateDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductBase.ProductBaseCreateDTOtwo;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductBase.ProductBaseDTO;
+import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.product.ProductFilterSidebarDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.enums.AttributeType;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.exceptions.ProductNotFoundException;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.models.Product.Product;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -104,5 +106,42 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         return  ProductDTO.fromEntity(savedProduct);
+    }
+
+    public ProductFilterSidebarDTO getFilterData() {
+        List<ProductBase> products = productBaseRepository.findAll();
+
+        List<Product> variants = products.stream()
+                .flatMap(p -> p.getProductVariants().stream())
+                        .toList();
+
+        float minPrice = variants.stream()
+                .map(v -> v.getPrice() * v.getSalePercentage())
+                .min(Float::compare)
+                .orElse(0f);
+
+        float maxPrice = variants.stream()
+                .map(v -> v.getPrice() * v.getSalePercentage())
+                .max(Float::compare)
+                .orElse(0f);
+
+        List<String> categories = products.stream()
+                .map(ProductBase::getCategory)
+                .distinct()
+                .sorted()
+                .toList();
+
+        List<String> brands = products.stream()
+                .map(ProductBase::getProductBrand)
+                .distinct()
+                .sorted()
+                .toList();
+
+        return new ProductFilterSidebarDTO(
+                minPrice,
+                maxPrice,
+                categories,
+                brands
+        );
     }
 }

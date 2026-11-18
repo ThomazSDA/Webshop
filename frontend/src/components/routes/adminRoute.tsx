@@ -7,7 +7,7 @@ export const AdminRoute = () => {
     const [redirect, setRedirect] = useState(false);
 
     useEffect(() => {
-        if (!user || !user.roles.includes("ROLE_ADMIN")) {
+        if (!user || !user.roles.includes("ADMIN")) {
             const timer = setTimeout(() => setRedirect(true), 3000);
             return () => clearTimeout(timer);
         }
@@ -23,7 +23,7 @@ export const AdminRoute = () => {
         )
     }
 
-    if (!user.roles.includes("ROLE_ADMIN")) {
+    if (!user.roles.includes("ADMIN")) {
         if (redirect) return <Navigate to="/" replace />;
         return (
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>

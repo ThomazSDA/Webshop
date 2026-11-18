@@ -66,7 +66,6 @@ public class UserController {
 
     @GetMapping("/me/shoppingcart")
     public ResponseEntity<ShoppingCartDTO> getMyCart(@AuthenticationPrincipal UserDetails userDetails) {
-//        ShoppingCart myCart = shoppingCartService.getOrCreateActiveUserCart(user);
         return ResponseEntity.ok(shoppingCartService.getOrCreateMyCart(userDetails));
     }
 
@@ -89,14 +88,4 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
-
-//    @GetMapping("/me/shoppingcart/total-price")
-//    public ResponseEntity<ShoppingCartDTO> getTotalPrice(@AuthenticationPrincipal UserDetails userDetails) {
-//        ShoppingCart shoppingCart = shoppingCartService
-//    }
-
-//    @PostMapping("/me/checkout")
-//    public ResponseEntity<ShoppingCartDTO> checkout(@AuthenticationPrincipal UserDetails userDetails) {
-//
-//    }
 }

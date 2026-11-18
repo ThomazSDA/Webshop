@@ -17,6 +17,7 @@ public record ProductBaseDTO(
         String name,
         String description,
         String productBrand,
+        int totalStock,
         List<ProductDTO> productVariants,
         List<ProductAttributeDTO> attributes
 ) {
@@ -29,6 +30,9 @@ public record ProductBaseDTO(
                 productBase.getName(),
                 productBase.getDescription(),
                 productBase.getProductBrand(),
+                productBase.getProductVariants().stream()
+                                .mapToInt(Product::getStock)
+                                .sum(),
                 productBase.getProductVariants().stream()
                                 .map(ProductDTO::fromEntity)
                                         .toList(),

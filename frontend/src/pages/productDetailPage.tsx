@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
-import type { ProductBaseDTO, SelectedAttributes } from "../types/models";
+import type { MutationError, ProductBaseDTO, SelectedAttributes } from "../types/models";
 import { API_URL } from "../App";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import '../styles/product.css'
 import { createCart, setCart, useCartStore } from "../components/stores/cartStore";
 
@@ -10,6 +10,7 @@ const ProductDetailPage = () => {
     const { productId } = useParams<{ productId: string }>();
     const numericProductId = Number(productId);
     const { cart } = useCartStore();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const { data: product, isLoading, error } = useQuery<ProductBaseDTO>({
         queryKey: ['product', numericProductId],
@@ -38,13 +39,22 @@ const ProductDetailPage = () => {
                 body: JSON.stringify({ productId, amount }),
             });
             if (!response.ok) {
-                throw new Error("Failed to add product to cart");
+                const errorBody = await response.json();
+
+                throw {
+                    message: errorBody.message ?? "Failed to add item to cart.",
+                    status: response.status,
+                } as MutationError;
+                // throw new Error("Failed to add product to cart");
             }
             return response.json();
         },
         onSuccess: (updatedCart) => {
             setCart(updatedCart);
             alert("item added to cart!");
+        },
+        onError: (error) => {
+            setErrorMessage(error.message);
         }
     })
 
@@ -62,6 +72,24 @@ const ProductDetailPage = () => {
         attributeMap.get(name)!.add(value);
     })
 
+    // Logic for autoSelecting dropdowns
+    useEffect(() => {
+    if (!attributeMap.size) return;
+
+    const autoSelected: SelectedAttributes = {};
+
+    attributeMap.forEach((values, attributeName) => {
+        if (values.size === 1) {
+            autoSelected[attributeName] = Array.from(values)[0];
+        }
+    });
+
+    setSelectedAttributes(prev => ({
+        ...autoSelected,
+        ...prev, // user choice always wins
+        }));
+    }, [product]);
+
     const [selectedAttributes, setSelectedAttributes] = useState<SelectedAttributes>({});
     const [quantity, setQuantity] = useState(1);
 
@@ -69,7 +97,10 @@ const ProductDetailPage = () => {
         variant.attributes.every(attr => selectedAttributes[attr.attribute] === attr.value)
     );
 
-    const lowStock = selectedVariant && selectedVariant.stock === 1;
+    useEffect(() => {
+        setQuantity(1);
+        setErrorMessage(null);
+    }, [selectedVariant]);
 
     const isOptionOutOfStock = (attributeName: string,  value: string) => {
         return !product?.productVariants.some(variant => {
@@ -88,49 +119,15 @@ const ProductDetailPage = () => {
         });
     };
 
-    // const attributeByName = allAttributes?.reduce((acc, attr) => {
-    //     if (!acc[attr.attribute]) {
-    //         acc[attr.attribute] = new Set();
-    //     }
+    const variantInCart = cart?.cartItems.find(
+        item => item.product.productId === selectedVariant?.id
+    );
 
-    //     acc[attr.attribute].add(attr.value);
-    //     return acc;
-    // }, {} as Record<string, Set<string>>);
+    const inCartAmount = variantInCart?.amount ?? 0;
 
-//    const attributeName = (allAttributes: ProductDTO) => {
-//         const map = new Map<string, ProductDTO>();
- 
-//         allAttributes.attributes.forEach(variant => {
-//             if (!map.has(variant.attribute)) {
-//                 map.set(variant.attribute, variant);
-//             }
-//         });
-//         // productVariants.forEach(variant => {
-//         //     if (!map.has(variant.color)) {
-//         //     map.set(variant.color, variant);
-//         //     }
-//         // });
-//         return Array.from(map.values());
-//     }
-
-
-    // type AttributeMap = Record<string, string[]>;
-
-    // const attributeMap: AttributeMap = {};
-
-    // product?.productVariants.forEach(variant => {
-    //     variant.attributes.forEach(attr => {
-    //         if (!attributeMap[attr.attribute]) {
-    //             attributeMap[attr.attribute] = [];
-    //         }
-
-    //         if (!attributeMap[attr.attribute].includes(attr.value)) {
-    //             attributeMap[attr.attribute].push(attr.value);
-    //         }
-    //     });
-    // });
-
-    // const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+    const remainingStock = selectedVariant ? selectedVariant.stock - inCartAmount : 0;
+    const isOutOfStock = selectedVariant && remainingStock === 0;
+    const isLowStock = selectedVariant && remainingStock !== null && remainingStock > 0 && remainingStock <= 2;
 
     const handleAddToCart = async () => {
         console.log("[ADD TO CART]", {
@@ -140,7 +137,7 @@ const ProductDetailPage = () => {
         quantity
     });
 
-        if (!cart || !selectedVariant) {
+        if (!selectedVariant) {
             console.warn("Blocked AddToCart");
             return;
         }
@@ -230,39 +227,43 @@ const ProductDetailPage = () => {
                     <div className="quantity">
                         <button
                             onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                            disabled={!selectedVariant}
+                            disabled={!selectedVariant || remainingStock === 0}
                         >
                             -
                         </button>
                         <input
                             type="number"
                             min={1}
-                            max={selectedVariant?.stock ?? 1}
+                            // max={selectedVariant?.stock ?? 1}
+                            max={remainingStock}
                             value={quantity}
                             onChange={(e) =>
-                                setQuantity(Math.min(selectedVariant?.stock ?? 1,
+                                // setQuantity(Math.min(selectedVariant?.stock ?? 1,
+                                    setQuantity(Math.min(remainingStock,
                                     Math.max(1, Number(e.target.value))
                                 ))
                             }
-                            disabled={!selectedVariant}
+                            disabled={!selectedVariant || remainingStock === 0}
                         />
                         <button
-                            onClick={() => setQuantity(q => Math.min(selectedVariant!.stock, q + 1))}
-                            disabled={!selectedVariant}
+                            // onClick={() => setQuantity(q => Math.min(selectedVariant!.stock, q + 1))}
+                            onClick={() => setQuantity(q => Math.min(remainingStock, q + 1))}
+                            disabled={!selectedVariant || remainingStock === 0 || quantity >= remainingStock}
                         >
                             +
                         </button>
-                        {lowStock && <div style={{ display: "inline-block" }} className="low-stock">Only {selectedVariant.stock} left in stock!</div>}
+                        {isOutOfStock && <div style={{ display: "inline-block", color: "red" }} className="low-stock">Already in your cart</div>}
+                        {isLowStock && <div style={{ display: "inline-block" }} className="low-stock">Only {remainingStock} left in stock!</div>}
                     </div>
+                    {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
                     <button
-                        disabled={!selectedVariant || selectedVariant.stock === 0}
+                        disabled={!selectedVariant || remainingStock === 0}
                         className="add-to-cart"
                         style={{ width: 115 }}
                         onClick={handleAddToCart}
                         >
                         Add to Cart
                     </button>
-                    <div className="hide">Please select all options to add this product to your cart</div>
                 </div>
             </div>
         </div>

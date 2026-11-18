@@ -5,10 +5,7 @@ import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.shoppingCart.ShoppingCar
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.shoppingCart.ShoppingCartDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.shoppingCart.ShoppingCartUpdateDTO;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.dtos.user.UserDTO;
-import com.Webshop.ClassAssignment.ItVitae.Webshop.exceptions.CartItemNotFoundException;
-import com.Webshop.ClassAssignment.ItVitae.Webshop.exceptions.ProductNotFoundException;
-import com.Webshop.ClassAssignment.ItVitae.Webshop.exceptions.ShoppingCartNotFoundException;
-import com.Webshop.ClassAssignment.ItVitae.Webshop.exceptions.UserNotFoundException;
+import com.Webshop.ClassAssignment.ItVitae.Webshop.exceptions.*;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.models.CartItem;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.models.Product.Product;
 import com.Webshop.ClassAssignment.ItVitae.Webshop.models.ShoppingCart;
@@ -116,18 +113,13 @@ public class ShoppingCartService {
                     return newItem;
                 });
 
+        if (cartItem.getAmount() + cartItemCreateDTO.amount() > product.getStock()) {
+            throw new InsufficientStockException("Not enough stock");
+        }
+
         cartItem.setAmount(cartItem.getAmount() + cartItemCreateDTO.amount());
         cartItemRepository.save(cartItem);
 
-//        CartItem cartItem = new CartItem();
-//        cartItem.setProduct(product);
-//        cartItem.setAmount(cartItemCreateDTO.amount());
-//        cartItem.setShoppingCart(shoppingCart);
-//
-//        shoppingCart.addCartItem(cartItem);
-//        cartItemRepository.save(cartItem);
-//        ShoppingCart savedShoppingCart = shoppingCartRepository.save(shoppingCart);
-//        return ShoppingCartDTO.fromEntity(savedShoppingCart);
         return ShoppingCartDTO.fromEntity(shoppingCart);
     }
 
@@ -145,9 +137,6 @@ public class ShoppingCartService {
         ShoppingCart cart = getOrCreateActiveUserCart(user);
 
         return ShoppingCartDTO.fromEntity(cart);
-//                .findByUserAndActiveTrue(user)
-//                .map(ShoppingCartDTO::fromEntity)
-//                .orElse(null);
     }
 
     public ShoppingCart mergeGuestIntoUserCart(Long guestCartId, UserDetails userDetails) {
@@ -178,23 +167,6 @@ public class ShoppingCartService {
 
         guestCart.getCartItemList().clear();
         guestCart.setActive(false);
-//        for (CartItem guestItem: guestCart.getCartItemList()) {
-//
-//            Optional<CartItem> existingItem = userCart.getCartItemList().stream()
-//                    .filter(item -> item.getProduct().getId()
-//                            .equals(guestItem.getProduct().getId()))
-//                    .findFirst();
-//
-//            if (existingItem.isPresent()) {
-//                existingItem.get().setAmount(
-//                        existingItem.get().getAmount() + guestItem.getAmount()
-//                );
-//            } else {
-//                guestItem.setShoppingCart(userCart);
-//                userCart.getCartItemList().add(guestItem);
-//            }
-//        }
-//        guestCart.setActive(false);
 
         shoppingCartRepository.save(userCart);
         shoppingCartRepository.save(guestCart);

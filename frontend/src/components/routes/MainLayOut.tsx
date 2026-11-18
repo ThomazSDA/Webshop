@@ -26,12 +26,17 @@ const MainLayOut = () => {
         setShowOffCanvas(!showOffCanvas);
     }
 
+    const PRICE_MIN = 0;
+    const PRICE_MAX = 1000;
+
     const [filters, setFilters] = useState<ProductFilters>({
         categories: [],
         // colors: [],
         brands: [],
         sizes: [],
         onSale: false,
+        minPrice: PRICE_MIN,
+        maxPrice: PRICE_MAX,
     })
 
     const initialized = useRef(false);
